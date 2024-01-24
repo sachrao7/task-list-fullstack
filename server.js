@@ -12,21 +12,50 @@ let db,
     dbConnectionStr = process.env.DB_CONNECTION,
     dbName = 'todo'
 
-MongoClient.connect(dbConnectionStr, { useUnifiedTopology: true })
-    .then(client => {
+
+async function connectToDatabaseAndStartServer(){
+    try {
+        const client = await MongoClient.connect(dbConnectionStr, { useUnifiedTopology: true })
         console.log(`Connected to ${dbName} Database`)
-        db = client.db(dbName)
+        const db = client.db(dbName)
+
+        const server = app.listen(process.env.PORT || PORT, ()=>{
+            console.log(process.env.PORT)
+            console.log(`Server running on port ${PORT}`)
+        })
+
+        return {db, server}
+    } catch(error) {
+        console.log('Error connecting to db and port')
+    }
+}
+
+// Call the function to connect to the database and start the server
+connectToDatabaseAndStartServer()
+    .then(({ db, server }) => {
+        // Now you can use 'db' and 'server' in your application
+        // For example, you can start defining routes or performing other tasks
     })
+    .catch(error => {
+        // Handle errors
+        console.error('Error:', error);
+    });
+
+// MongoClient.connect(dbConnectionStr, { useUnifiedTopology: true })
+//     .then(client => {
+//         console.log(`Connected to ${dbName} Database`)
+//         db = client.db(dbName)
+//     })
     
 app.set('view engine', 'ejs')
 app.use(express.static('public'))
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
-app.listen(process.env.PORT || PORT, ()=>{
-    console.log(process.env.PORT)
-    console.log(`Server running on port ${PORT}`)
-})
+// app.listen(process.env.PORT || PORT, ()=>{
+//     console.log(process.env.PORT)
+//     console.log(`Server running on port ${PORT}`)
+// })
 
 
 
